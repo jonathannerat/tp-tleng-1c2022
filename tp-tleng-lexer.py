@@ -12,44 +12,23 @@ tokens = (
     'STRING',
     'ID' 
 )
-def t_TYPE(t):
-    r'type'
-    return t 
 
-def t_STRUCT(t):
-    r'struct'
-    return t
+t_LBRACKET = r'\{'
+t_RBRACKET = r'\}'
+t_ARRAY = r'\[\]'
 
-def t_LBRACKET(t):
-    r'\{'
-    return t
-
-def t_RBRACKET(t):
-    r'\}'
-    return t
-
-def t_ARRAY(t):
-    r'\[\]'
-    return t
-
-def t_FLOAT(t):
-    r'float64'
-    return t 
-
-def t_BOOL(t):
-    r'bool'
-    return t
-
-def t_INT(t):
-    r'int'
-    return t
-
-def t_STRING(t):
-    r'string'
-    return t
+reserved = {
+    'type' : 'TYPE',
+    'struct' : 'STRUCT',
+    'float64' : 'FLOAT',
+    'bool' : 'BOOL',
+    'int' : 'INT',
+    'string' : 'STRING'
+}
 
 def t_ID(t):
     r'[a-z]\w*'
+    t.type = reserved.get(t.value, 'ID')
     return t 
 
 def t_newline(t):
@@ -59,8 +38,7 @@ def t_newline(t):
 t_ignore = ' \t'
 
 def t_error(t):
-    print("Caracter ilegal '%s'" % t.value[0])
-    t.lexer.skip(1)
+    raise Exception("Caracter ilegal: {0}. En linea: {1}".format(t.value[0], t.lineno))
 
 lexer = lex.lex()
 
