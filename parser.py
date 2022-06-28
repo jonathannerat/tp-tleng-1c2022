@@ -33,12 +33,8 @@ class PTypeArray:
 class PTypeStruct:
     level = 0
 
-    def __init__(self, prop):
-        self.props = [prop]
-
-    def add_props(self, props):
-        for prop in props:
-            self.props.append(prop)
+    def __init__(self, props):
+        self.props = props
 
     def set_level(self, level):
         self.level = level
@@ -56,23 +52,18 @@ class PTypeStruct:
 
 
 def p_start_decl(p):
-    "start : decl decllist"
+    "decllist : decl decllist"
     p[0] = [p[1]] + p[2]
+
+
+def p_decllist_decl(p):
+    "decllist : decl"
+    p[0] = [p[1]]
 
 
 def p_decl(p):
     "decl : TYPE ID type"
     p[0] = PTypedef(p[2], p[3])
-
-
-def p_decllist_decl(p):
-    "decllist : decl decllist"
-    p[0] = [p[1]] + p[2]
-
-
-def p_decllist_empty(p):
-    "decllist : empty"
-    p[0] = []
 
 
 def p_type_array(p):
@@ -81,10 +72,8 @@ def p_type_array(p):
 
 
 def p_type_struct(p):
-    "type : STRUCT '{' prop proplist '}'"
-    struct = PTypeStruct(p[3])
-    struct.add_props(p[4])
-    p[0] = struct
+    "type : STRUCT '{' proplist '}'"
+    p[0] = PTypeStruct(p[3])
 
 
 def p_type_id(p):
@@ -103,13 +92,8 @@ def p_proplist_prop(p):
 
 
 def p_proplist_empty(p):
-    "proplist : empty"
-    p[0] = []
-
-
-def p_empty(_):
-    "empty :"
-    pass
+    "proplist : prop"
+    p[0] = [p[1]]
 
 
 def p_error(p):
