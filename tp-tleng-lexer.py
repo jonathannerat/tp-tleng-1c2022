@@ -1,48 +1,36 @@
 import ply.lex as lex
 
-tokens = (
-    'TYPE',
-    'STRUCT',
-    'LBRACKET',
-    'RBRACKET',
-    'ARRAY', 
-    'FLOAT', 
-    'BOOL', 
-    'INT', 
-    'STRING',
-    'ID' 
-)
-
-t_LBRACKET = r'\{'
-t_RBRACKET = r'\}'
-t_ARRAY = r'\[\]'
+literals = "{}"
 
 reserved = {
-    'type' : 'TYPE',
-    'struct' : 'STRUCT',
-    'float64' : 'FLOAT',
-    'bool' : 'BOOL',
-    'int' : 'INT',
-    'string' : 'STRING'
+    "type": "TYPE",
+    "struct": "STRUCT",
 }
 
+tokens = ["ARRAY", "ID"] + list(reserved.values())
+
+t_ARRAY = r"\[\]"
+t_ignore = " \t"
+
+
 def t_ID(t):
-    r'[a-z]\w*'
-    t.type = reserved.get(t.value, 'ID')
-    return t 
+    r"[a-z]\w*"
+    t.type = reserved.get(t.value, "ID")
+    return t
+
 
 def t_newline(t):
-    r'\n+'
+    r"\n+"
     t.lexer.lineno += len(t.value)
 
-t_ignore = ' \t'
 
 def t_error(t):
     raise Exception("Caracter ilegal: {0}. En linea: {1}".format(t.value[0], t.lineno))
 
+
 lexer = lex.lex()
 
-ejemplo = '''
+ejemplo = """
 type persona struct {
     nombre string
     edad int
@@ -58,8 +46,8 @@ type pais struct {
         sufijo string
     }
 }
-'''
+"""
 
 lexer.input(ejemplo)
-for tok in lexer: 
+for tok in lexer:
     print(tok)
