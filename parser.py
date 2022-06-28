@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding=utf-8 -*-
 
+from sys import stdin
 import ply.yacc as yacc
 
 from lexer import tokens
@@ -70,24 +71,3 @@ def p_error(p):
 
 
 parser = yacc.yacc()
-
-data = """
-type persona struct {
-    nombre  string
-    edad    int
-    nacionalidad pais
-    ventas []float64
-    activo bool
-}
-
-type pais struct {
-    nombre string
-    codigo struct {
-        prefijo string
-        sufijo string
-    }
-}
-"""
-
-result = parser.parse(data)
-print(result)
