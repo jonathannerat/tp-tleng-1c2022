@@ -7,7 +7,8 @@ def main():
 
     result = parser.parse(input)
 
-    write_output(result)
+    for typedef in result:
+        write_output(str(typedef))
 
 
 def get_input():
