@@ -1,12 +1,16 @@
 import sys
+import json
 from parser import parser
+from sample_generator import SampleGenerator
 
 
 def main():
     input = get_input()
-    result = parser.parse(input)
+    typedefs = parser.parse(input)
+    sample = SampleGenerator(typedefs).generate()
+    sample_json = json.dumps(sample)
 
-    write_output(result)
+    write_output(sample_json)
 
 
 def get_input():
@@ -17,14 +21,12 @@ def get_input():
         return sys.stdin.read()
 
 
-def write_output(typedefs):
+def write_output(json):
     if len(sys.argv) > 2:
         with open(sys.argv[2], "w") as output:
-            for typedef in typedefs:
-                output.write(str(typedef))
+            output.write(json)
     else:
-        for typedef in typedefs:
-            sys.stdout.write(str(typedef))
+        sys.stdout.write(json)
 
 
 if __name__ == "__main__":

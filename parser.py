@@ -6,6 +6,8 @@ import ply.yacc as yacc
 
 from lexer import tokens
 
+def random_count():
+    return 3
 
 # definicion de tipo
 class PTypedef:
@@ -13,42 +15,43 @@ class PTypedef:
         self.name = name
         self.type = type
 
-        if isinstance(type, PTypeStruct):
-            type.set_level(0)
-
-    def __str__(self):
-        return "%s => %s\n" % (self.name, self.type)
-
-
 # tipo array, tiene un subtipo
 class PTypeArray:
     def __init__(self, type):
         self.type = type
 
-    def __str__(self):
-        return "[]" + self.type
-
+    def random_value(self, type_resolver):
+        return [
+			type_resolver(self.type).random_value(type_resolver) for _ in range(1, random_count())
+		]
 
 # tipo array, tiene una lista de pares (nombre, tipo)
 class PTypeStruct:
-    level = 0
-
     def __init__(self, props):
         self.props = props
 
-    def set_level(self, level):
-        self.level = level
-        for prop in self.props:
-            if isinstance(prop[1], PTypeStruct):
-                prop[1].set_level(level + 1)
+    def random_value(self, type_resolver):
+        random_dict = {}
+        for (name, type) in self.props:
+            random_dict[name] = type_resolver(type).random_value(type_resolver)
 
-    def __str__(self):
-        indent = "\t" * self.level
-        str = "{\n"
-        for prop in self.props:
-            str += indent + "\t%s %s\n" % prop
+        return random_dict
 
-        return str + indent + "}"
+class PTypeBool:
+    def random_value(self, _):
+        return True
+
+class PTypeFloat:
+    def random_value(self, _):
+        return 4.3
+
+class PTypeInt:
+    def random_value(self, _):
+        return 17
+
+class PTypeString:
+    def random_value(self, _):
+        return "random"
 
 
 def p_start_decl(p):
