@@ -19,10 +19,7 @@ def get_input():
 
 def write_output(typedefs):
     if len(sys.argv) > 2:
-        with open(sys.argv[2], "r+") as output:
-            # limpiar el archivo
-            output.seek(0)
-            output.truncate()
+        with open(sys.argv[2], "w") as output:
             for typedef in typedefs:
                 output.write(str(typedef))
     else:

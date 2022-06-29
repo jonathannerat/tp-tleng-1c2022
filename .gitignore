@@ -1,0 +1,6 @@
+.DS_Store
+data/*.out
+*.pyc
+parser.out
+parsetab.py
+ply/*
