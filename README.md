@@ -1,2 +1,16 @@
 # TP TLENG 1c2022
 
+El programa fue probado con Python v3.10.5, y depende de la librería `ply` v3.11.
+
+El mismo se puede correr sin argumentos para procesar entrada por `stdin`, y escribir la salida por `stdout`, o con
+hasta 2 argumentos opcionales, especificando los archivos de entrada y de salida:
+
+```sh
+python ./src/main.py [ INPUT_FILE [ OUTPUT_FILE ] ]
+```
+
+También se provee un archivo `Makefile` con una tarea `test` para procesar las entradas incluidas en este proyecto:
+
+```sh
+make test
+```
