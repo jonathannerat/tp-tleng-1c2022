@@ -1,0 +1,114 @@
+% !TeX spellcheck = es_AR
+\documentclass[10pt, a4paper]{article}
+
+\usepackage{caratula}
+
+\usepackage[utf8]{inputenc}
+\usepackage[spanish]{babel} % separación silábica en castellano
+
+%\usepackage[paper=a4paper, margin=2cm]{geometry} % especifico márgenes manualmente
+\usepackage{a4wide} % margenes un poco más anchos
+
+%\usepackage{caratula/caratula}
+%\graphicspath{ {images/} }
+%\usepackage{tikz}
+%\usepackage{tikz-qtree}
+%\usepackage{framed}
+%\usepackage{array}
+%\usepackage{tabular}
+
+\usepackage{microtype} % saca warnings de underfull boxes
+\usepackage{fancyhdr} % encabezado y pie de página
+\usepackage{lastpage} % para que muestre la última página en footer
+
+% Comandos para figuras, graficos, tikz, etc.
+\usepackage{tikz}
+\usepackage{epsfig}
+\usepackage{graphicx}
+\usepackage{epsfig}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{svg}
+\usepackage{listings}
+
+% Estilos para lstlisting
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.97,0.97,0.94}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,
+    breaklines=true,
+    captionpos=b,
+    keepspaces=true,
+    numbers=left,
+    numbersep=5pt,
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    tabsize=2
+}
+
+\lstset{style=mystyle}
+
+% Comandos para teoremas, etc.
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{amssymb}
+
+% comandos para algoritmos
+\usepackage{algorithm}
+\usepackage[noend]{algpseudocode}
+\algnewcommand{\IfThenElse}[3]{% \IfThenElse{<if>}{<then>}{<else>}
+\State \algorithmicif\ #1\ \algorithmicthen\ #2\ \algorithmicelse\ #3}
+\algnewcommand{\IfThen}[2]{% \IfThenElse{<if>}{<then>}
+  \State \algorithmicif\ #1\ \algorithmicthen\ #2}
+  
+\newcommand{\norm}[1]{\left\lVert#1\right\rVert_2}
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,      
+    urlcolor=cyan,
+    pdftitle={TP TLENG 1c2022},
+    pdfpagemode=UseNone,
+    citecolor=blue,
+}
+
+\pagestyle{fancy} % Acomodo el encabezado y pie de página.
+\lhead{Teoría de lenguajes}
+\setlength{\headheight}{12pt}
+\rhead{Primer Cuatrimestre 2022}
+\cfoot{\thepage /\pageref{LastPage}}
+
+
+
+\begin{document}
+
+\input{1_caratula}
+
+\maketitle
+
+\tableofcontents
+
+\newpage
+
+\input{2_introduccion}
+
+\input{3_gramatica}
+
+\input{4_errores}
+
+\input{5_json}
+
+\input{6_conclusión}
+
+\end{document}

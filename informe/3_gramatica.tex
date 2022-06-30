@@ -1,0 +1,111 @@
+\section{Gramática, Parsing y AST}
+\label{sec:gramatica}
+
+\subsection{Construcción de la Gramática}
+Para construir la gramática, analizaremos una posible cadena de entrada para ver cuáles son los terminales y no terminales necesarios:
+
+\begin{verbatim}
+type persona struct {
+    nombre string
+    edad int
+    nacionalidad pais
+    ventas []float64
+    activo bool
+}
+type pais struct {
+    nombre string
+    codigo struct {
+        prefijo string
+        sufijo string
+    }
+}
+\end{verbatim}
+
+Como en la entrada podemos recibir muchas declaraciones de tipos, y por lo menos hay una declaración (que es la que se utiliza para generar el JSON de salida), intuimos que debe haber una producción para la declaración, y otra para acumular varias:
+
+\begin{equation}
+\begin{split}
+DeclList & \rightarrow Decl~|~Decl~DeclList 
+\end{split}
+\end{equation}
+
+Cada declaración consiste de un nombre seguido del tipo asociado al nombre:
+
+\begin{equation} \label{gram:decl}
+\begin{split}
+Decl & \rightarrow type~name~Type
+\end{split}
+\end{equation}
+
+El no terminal \texttt{Type} debe ser capaz de generar los tipos mencionados en la sección \ref{sec:intro}. 
+
+\begin{equation} \label{gram:type}
+\begin{split}
+Type & \rightarrow BasicType~|~ArrayType~|~StructType \\
+BasicType & \rightarrow string~|~int~|~float64~|~bool \\
+ArrayType & \rightarrow []~Type
+\end{split}
+\end{equation}
+
+Para el no terminal \texttt{StructType}, recordemos que las estructuras pueden contener más de una propiedad, por lo que necesitaremos de otro no terminal para listar las mismas:
+
+\begin{equation} \label{gram:struct}
+\begin{split}
+StructType & \rightarrow struct~\{~PropList~\} \\
+PropList & \rightarrow Prop~|~Prop~PropList \\
+Prop & \rightarrow name~Type
+\end{split}
+\end{equation}
+
+Para simplificar la gramática, podemos juntar los terminales \texttt{name}, \texttt{string}, \texttt{int}, \texttt{float64} y \texttt{bool} en un terminal \texttt{id}, que representa los identificadores tanto de propiedades como de tipos. Luego en la etapa de parsing los diferenciaremos según el contexto y el valor que contenga el lexema. Reemplazando por \texttt{id} en \ref{gram:decl}, \ref{gram:type} y \ref{gram:struct}, y juntando todo, obtenemos el siguiente conjunto de producciones $P'$:
+
+
+\begin{equation}
+\begin{split}
+DeclList & \rightarrow Decl~|~Decl~DeclList  \\
+Decl & \rightarrow type~id~Type \\
+Type & \rightarrow BasicType~|~ArrayType~|~StructType \\
+BasicType & \rightarrow id \\
+ArrayType & \rightarrow []~Type \\
+StructType & \rightarrow struct~\{~PropList~\} \\
+PropList & \rightarrow Prop~|~Prop~PropList \\
+Prop & \rightarrow id~Type
+\end{split}
+\end{equation}
+
+Podemos simplificarla un poco más si reemplazamos los no terminales del lado derecho de \texttt{Type} con las producciones correspondientes, obteniendo así $P$:
+
+\begin{equation}
+\begin{split}
+DeclList & \rightarrow Decl~|~Decl~DeclList  \\
+Decl & \rightarrow type~id~Type \\
+Type & \rightarrow id~|~[]~Type~|~struct~\{~PropList~\} \\
+PropList & \rightarrow Prop~|~Prop~PropList \\
+Prop & \rightarrow id~Type
+\end{split}
+\end{equation}
+
+Finalmente, proponemos la siguiente gramática
+
+\[
+G = \langle\{Decl, DeclList, Type, PropList, Prop\}, \{type, id, [], struct, '\{', '\}'\}, P, DeclList\rangle
+\]
+
+para generar el lenguaje de las cadenas que esperamos recibir por entrada.
+
+\subsection{Parser}
+
+Antes de implementar la gramática con Yacc, tenemos que hacer un preprocesamiento de la misma para convertir el texto en una lista de tokens. Para esto utilizaremos el módulo Lex, y proveeremos las expresiones regulares necesarias para que el lexer identifique a cada token.
+
+Definimos 6 tokens en total, de los cuales 2 son los literales '\{' y '\}'. El resto son:
+
+\begin{itemize}
+    \item \texttt{TYPE = type}
+    \item \texttt{STRUCT = struct} 
+    \item \texttt{ARRAY = []} 
+    \item \texttt{ID = r'[a-z]\textbackslash w*'}
+\end{itemize}
+
+Los primeros 3 los definimos con la cadena que los identifica, mientras que el token \texttt{ID} lo representamos con una expresion regular que corresponde con los posibles identificadores de este lenguaje, palabras que empiecen con una letra minúscula.
+
+Una vez hecho esto, procedemos a implementar el parser de gramática utilizando Yacc.

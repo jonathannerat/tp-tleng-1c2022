@@ -1,0 +1,49 @@
+\section{Resumen}
+
+En este trabajo implementaremos un programa para parsear definiciones de un subconjunto de tipos de Go, y generar cadenas JSON aleatorias que se correspondan a los tipos definidos.
+
+El trabajo estará organizado de la siguiente manera:
+
+\begin{itemize}
+	\item \textbf{Sección \ref{sec:intro}: Introducción}, requerimientos del programa, y las herramientas que utilizamos para implementarlo
+	\item \textbf{Sección \ref{sec:gramatica}: Gramática, Parsing y AST}, gramática utilizada, implementación de la misma y el árbol sintáctico resultante.
+	\item \textbf{Sección \ref{sec:errores}: Detección de Errores} métodos utilizados para detectar errores, tanto sintácticos como semánticos (dependencias circulares)
+	\item \textbf{Sección \ref{sec:json}: Resolución y Generación de JSON} métodos utilizados para resolver dependencias y generar la salida aleatoria en formato JSON
+\end{itemize}
+
+Palabras clave: \textit{Parser, LALR(1), JSON Generator}
+
+\newpage
+
+\section{Introducción}
+\label{sec:intro}
+
+El programa deberá ser capaz de leer definiciones de un subconjunto de tipos de Go. Estas definiciones consisten de asignarle un nombre a un tipo, donde el tipo puede ser:
+
+\begin{itemize}
+    \item Tipo básico: \texttt{string}, \texttt{int}, \texttt{float64} y \texttt{bool}. Representan los valores convencionales.
+    \item Arreglos: tienen la forma \texttt{[]}\textit{T} y representan listas de elementos de tipo \texttt{T}. Por ejemplo: \texttt{[]float64}, \texttt{[][]int}, etc. 
+    \item Estructuras: tienen la forma \texttt{struct \{ prop } \textit{T} \texttt{ ... \}}, donde prop es el nombre de una propiedad de la estructura y T el tipo de la misma. Las estructuras tienen más de una propiedad, cada una con un tipo asociado. Por ejemplo:
+    \begin{verbatim}
+struct {
+    nombre string
+    pais struct {
+        nombre string
+        poblacion int
+    }
+}
+    \end{verbatim}
+    \item Referencias: son nombres que hacen referencia a otro tipo definido en la entrada. Por ejemplo:
+    \begin{verbatim}
+type persona {
+    nombre cadena
+    edad entero
+}
+type cadena string
+type entero int
+    \end{verbatim}
+\end{itemize}
+
+Para hacer el parsing de estas estructuras, utilizaremos la librería PLY (\textit{Python Lex-Yacc}). Esta consiste de dos módulos principales: Lex y Yacc. Lex es el que se encargará de leer la entrada y convertirla en una lista de lexemas, mientras que Yacc nos permitirá definir una gramática (utilizando estos lexemas como terminales) y generar el parser LALR(1) de la misma.
+
+
