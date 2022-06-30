@@ -8,14 +8,12 @@ from mylexer import tokens
 from myast import BasicTypeNode, TypedefNode, ArrayTypeNode, StructTypeNode, basic_types
 
 
-def p_start_decl(p):
-    "decllist : decl decllist"
-    p[0] = [p[1]] + p[2]
-
-
-def p_decllist_decl(p):
-    "decllist : decl"
+def p_decllist(p):
+    """decllist : decl
+    | decl decllist"""
     p[0] = [p[1]]
+    if len(p) > 2:
+        p[0].extend(p[2])
 
 
 def p_decl(p):
@@ -23,20 +21,17 @@ def p_decl(p):
     p[0] = TypedefNode(p[2], p[3])
 
 
-def p_type_array(p):
-    "type : ARRAY type"
-    p[0] = ArrayTypeNode(p[2])
-
-
-def p_type_struct(p):
-    "type : STRUCT '{' proplist '}'"
-    p[0] = StructTypeNode(p[3])
-
-
-def p_type_id(p):
-    "type : ID"
-    type_name = p[1]
-    p[0] = BasicTypeNode(type_name) if type_name in basic_types else type_name
+def p_type(p):
+    """type : ID
+    | ARRAY type
+    | STRUCT '{' proplist '}'"""
+    if len(p) == 2:
+        type_name = p[1]
+        p[0] = BasicTypeNode(type_name) if type_name in basic_types else type_name
+    elif len(p) == 3:
+        p[0] = ArrayTypeNode(p[2])
+    elif len(p) == 5:
+        p[0] = StructTypeNode(p[3])
 
 
 def p_prop(p):
@@ -44,14 +39,12 @@ def p_prop(p):
     p[0] = (p[1], p[2])
 
 
-def p_proplist_prop(p):
-    "proplist : prop proplist"
-    p[0] = [p[1]] + p[2]
-
-
-def p_proplist_empty(p):
-    "proplist : prop"
+def p_proplist(p):
+    """proplist : prop
+    | prop proplist"""
     p[0] = [p[1]]
+    if len(p) > 2:
+        p[0].extend(p[2])
 
 
 def p_error(p):
