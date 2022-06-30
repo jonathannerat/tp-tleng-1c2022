@@ -55,10 +55,8 @@ def write_output(maintype):
     json = maintype.generate_json()
 
     if len(sys.argv) > 2:
-        with open(sys.argv[2], "r+") as output:
+        with open(sys.argv[2], "w") as output:
             # limpiar el archivo
-            output.seek(0)
-            output.truncate()
             output.write(json)
     else:
         sys.stdout.write(json)
