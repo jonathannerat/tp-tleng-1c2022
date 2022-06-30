@@ -1,4 +1,5 @@
 import ply.lex as lex
+from myerror import TPError
 
 literals = "{}"
 
@@ -25,7 +26,7 @@ def t_newline(t):
 
 
 def t_error(t):
-    raise Exception("Caracter ilegal: {0}. En linea: {1}".format(t.value[0], t.lineno))
+    raise TPError("Error sintáctico: caractér ilegal '%s' en la linea %s, columna %s" % (t.value[0], t.lineno, t.lexpos + 1))
 
 
 lexer = lex.lex()

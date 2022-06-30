@@ -1,13 +1,23 @@
 #!/usr/bin/env python
 import sys
 from myparser import parser
+from myerror import TPError
 
 
 def main():
     input = get_input()
-    result = parser.parse(input)
-    maintype = resolve(result)
-    write_output(maintype)
+
+    try:
+        result = parser.parse(input)
+        maintype = resolve(result)
+    except TPError as e:
+        print(e.msg, file=sys.stderr)
+        sys.exit(1)
+    except Exception as e:
+        raise e
+        sys.exit(1)
+    else:
+        write_output(maintype)
 
 
 def get_input():
@@ -18,6 +28,7 @@ def get_input():
     else:
         return sys.stdin.read()
 
+
 def resolve(result):
     """Chequea y resuelve las dependencias internas en result"""
     deps = {}
@@ -26,8 +37,12 @@ def resolve(result):
     for typedef in result:
         deps[typedef.name] = list(typedef.get_deps().keys())
 
-    if has_loops(deps, maintype.name, {}):
-        raise Exception("La definicion tiene loops, corregir")
+    maybeloop = get_loop(deps, maintype.name, {})
+    if maybeloop is not None:
+        raise TPError(
+            "Error semántico, se encontró una referencia circular en la definición de '%s', mediante el tipo '%s'"
+            % maybeloop
+        )
 
     resolve_dict = {}
 
@@ -39,17 +54,20 @@ def resolve(result):
     return maintype
 
 
-def has_loops(graph, start, visited):
+def get_loop(graph, start, visited):
     """Verifica si graph tiene loops, empezando por start y habiendo visitado visited"""
     visited[start] = True
 
     for next in graph[start]:
         if next in visited and visited[next]:
-            return True
-        elif has_loops(graph, next, visited):
-            return True
+            return (start, next)
 
-    return False
+        maybeloop = get_loop(graph, next, visited)
+        if maybeloop is not None:
+            return maybeloop
+
+    return None
+
 
 def write_output(maintype):
     """Escribe a la salida (stdin / 2do arg) un json generado del tipo"""

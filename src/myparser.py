@@ -6,6 +6,7 @@ import ply.yacc as yacc
 
 from mylexer import tokens
 from myast import BasicTypeNode, TypedefNode, ArrayTypeNode, StructTypeNode, basic_types
+from myerror import TPError
 
 
 def p_decllist(p):
@@ -48,7 +49,7 @@ def p_proplist(p):
 
 
 def p_error(p):
-    print("Syntax error on input: %s" % p)
+    raise TPError("Error sintáctico: token inválido '%s' en la linea %s, columna %s" % (p.value, p.lineno, p.lexpos + 1))
 
 
 parser = yacc.yacc()
