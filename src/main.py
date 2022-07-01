@@ -20,15 +20,6 @@ def main():
         write_output(maintype)
 
 
-def get_input():
-    """Obtiene el texto de entrada (stdin / 1er arg.)"""
-    if len(sys.argv) > 1:
-        with open(sys.argv[1], "r") as input:
-            return input.read()
-    else:
-        return sys.stdin.read()
-
-
 def resolve(result):
     """Chequea y resuelve las dependencias internas en result"""
     deps = {}
@@ -69,8 +60,17 @@ def get_loop(graph, start, visited):
     return None
 
 
+def get_input():
+    """Obtiene el texto de entrada (stdin / 1er arg.)"""
+    if len(sys.argv) > 1:
+        with open(sys.argv[1], "r") as input:
+            return input.read()
+    else:
+        return sys.stdin.read()
+
+
 def write_output(maintype):
-    """Escribe a la salida (stdin / 2do arg) un json generado del tipo"""
+    """Escribe a la salida (stdout / 2do arg) un json generado del tipo"""
     json = maintype.generate_json()
 
     if len(sys.argv) > 2:
