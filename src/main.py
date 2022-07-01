@@ -49,6 +49,9 @@ def get_loop(graph, start, visited):
     """Verifica si graph tiene loops, empezando por start y habiendo visitado visited"""
     visited[start] = True
 
+    if start not in graph:
+        raise TPError("Error: el tipo '%s' no esta definido." % start)
+
     for next in graph[start]:
         if next in visited and visited[next]:
             return (start, next)
