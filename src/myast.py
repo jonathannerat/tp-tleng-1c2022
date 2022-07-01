@@ -25,11 +25,6 @@ class TypedefNode(Node):
         self.name = name
         self.type = type
 
-        _fix_struct(type, 0)
-
-    def __str__(self):
-        return "%s => %s\n" % (self.name, self.type)
-
     def generate_json(self):
         return self.type.generate_json()
 
@@ -52,9 +47,6 @@ class ArrayTypeNode(Node):
 
     def __init__(self, type):
         self.type = type
-
-    def __str__(self):
-        return "[]" + str(self.type)
 
     def generate_json(self):
         json_list = []
@@ -81,23 +73,8 @@ class ArrayTypeNode(Node):
 class StructTypeNode(Node):
     """Nodo Struct, declara un nodo con propiedades, cada una con un nombre y un tipo"""
 
-    level = 0
-
     def __init__(self, props):
         self.props = props
-
-    def set_level(self, level):
-        self.level = level
-        for prop in self.props:
-            _fix_struct(prop[1], level + 1)
-
-    def __str__(self):
-        indent = "\t" * self.level
-        str = "{\n"
-        for prop in self.props:
-            str += indent + "\t%s %s\n" % prop
-
-        return str + indent + "}"
 
     def generate_json(self):
         json_props = []
@@ -134,19 +111,19 @@ class StructTypeNode(Node):
 basic_types = ["string", "int", "bool", "float64"]
 
 
+def rand_string():
+    chardic = "abcdefghijklmnñopqrstuvwxyz"
+    chardiclen = len(chardic)
+    res = ""
+
+    for _ in range(randrange(0, 20)):
+        res += chardic[randrange(0, chardiclen)]
+
+    return '"' + res + '"'
+
+
 class BasicTypeNode(Node):
     """Nodo Basico, declara un tipo basico (string/int/bool/float)"""
-
-    @staticmethod
-    def rand_string():
-        chardic = "abcdefghijklmnñopqrstuvwxyz"
-        res = ""
-
-        for _ in range(randrange(0, 20)):
-            i = randrange(0, len(chardic))
-            res += chardic[i]
-
-        return '"' + res + '"'
 
     def __init__(self, type):
         if type not in basic_types:
@@ -154,12 +131,9 @@ class BasicTypeNode(Node):
 
         self.type = type
 
-    def __str__(self):
-        return self.type
-
     def generate_json(self):
         if self.type == "string":
-            return self.rand_string()
+            return rand_string()
         elif self.type == "int":
             return str(randrange(0, 1000))
         elif self.type == "float64":
@@ -169,8 +143,3 @@ class BasicTypeNode(Node):
 
     def get_deps(self):
         return {}
-
-
-def _fix_struct(maybestruct, level):
-    if isinstance(maybestruct, StructTypeNode):
-        maybestruct.set_level(level)
