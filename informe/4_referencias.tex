@@ -1,0 +1,87 @@
+\section{Ciclos y Referencias}
+\label{sec:referencias}
+
+Para completar el árbol y poder generar la salida, debemos antes resolver todas
+las referencias que aparezcan en tipo principal (el primer elemento del arreglo
+que devuelve nuestro parser). Esto no siempre será posible, ya que en algunos
+casos estas referencias pueden generar ciclos.
+
+\subsection{Detección de Ciclos}
+
+Para detectar estos ciclos, armamos el grafo dirigido de dependencias asociado al tipo
+principal, y lo recorremos marcando los nodos visitados hasta terminar de
+recorrer todos (no hay ciclos), o hasta visitar un nodo previamente visitado
+(hay un ciclo).
+
+\begin{algorithm}[H]
+\begin{algorithmic}
+\Function{grafo\_dependencia}{$T$: TypedefNode[]}
+    \State{$A \gets dict()$}
+    \For {$t$ in $T$}
+        \State {$A[t.nombre] \gets t.getDeps()$}
+    \EndFor
+    \State{\textbf{return} $A$}
+\EndFunction
+\end{algorithmic}
+\caption{Construcción del grafo de dependencias}
+\label{alg:grafo_dependencia}
+\end{algorithm}
+
+En el algoritmo \ref{alg:grafo_dependencia} llamamos al método \texttt{getDeps}
+de TypedefNode, para obtener la lista de referencias. Este al mismo tiempo,
+vuelve a llamar a getDeps para sus hijos en el arbol sintáctico, propagando las
+cadenas encontrados nuevamente a la raíz.
+
+\begin{algorithm}[H]
+\begin{algorithmic}
+    \Function{obtener\_ciclo}{$G$: grafo, $S$: string, $V$: diccionario}
+    \State{\textbf{marcar} $S$ como visitado en $V$}
+    \State{$siguientes \gets$ siguientes de $S$ en $G$}
+    \For {$n$ in $siguientes$}
+        \If{$n$ visitado en $V$}
+            \State{\textbf{return}ref $\langle S, n \rangle$}
+        \EndIf
+
+        \State{$c \gets$ \texttt{obtener\_ciclo($G$, $S$, $V$)}}
+        \If{$c$ no es None}
+            \State{\textbf{return} $c$}
+        \EndIf
+    \EndFor
+    \State{\textbf{return} None}
+\EndFunction
+\end{algorithmic}
+\caption{Detección de ciclos}
+\label{alg:obtener_ciclo}
+\end{algorithm}
+
+En el algoritmo \ref{alg:obtener_ciclo}, ademas de detectar si el grafo tiene un
+ciclo o no, retornamos el arco del grafo que genera el ciclo para reportarlo
+como error.
+
+Notar que el grafo solamente tiene en cuenta las dependencias asociadas al tipo
+principal, por lo que si en la entrada existen más definiciones de tipo que
+generan dependencias circulares entre si, pero que no aparecen en el tipo
+principal, el programa continuará sin reportar errores.
+
+Por el contrario, si la detección de ciclos devuelve \texttt{None}, el tipo
+principal no tiene dependencias circulares y podemos continuar con la resolución
+de referencias.
+
+\subsection{Resolución de referencias}
+
+En la sección \ref{subsec:ast}, mencionamos que aquellos identificadores que no
+sean tipos básicos, mantienen la cadena original. Para resolver estas
+referencias, utilizaremos el resultado del parser (la lista de
+\texttt{TypedefNode}'s) para crear un diccionario que tenga como claves los
+las referencias, y como valor la estructura del tipo asociada.
+
+Tanto la estructura \texttt{TypedefNode}, como las estructuras de tipos
+tienen un método \texttt{resolve} que recibe como parámetro el diccionario
+anterior. Cada uno de estos intercambian las referencias que aparecen en sus
+propiedades por el valor correspondiente en el diccionario, y propagan la
+llamada a \texttt{resolve} en sus propiedades.
+
+Como verificamos que el tipo principal no tenía dependencias circulares, este
+proceso de resolver cada nodo del árbol eventualmente termina, y tenemos un
+arbol sintáctico completo, que podemos usar para generar la salida.
+
