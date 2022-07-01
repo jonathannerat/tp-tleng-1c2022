@@ -58,7 +58,7 @@ def get_loop(graph, start, visited):
         if next in visited and visited[next]:
             return (start, next)
 
-        maybeloop = get_loop(graph, next, visited)
+        maybeloop = get_loop(graph, next, visited.copy())
         if maybeloop is not None:
             return maybeloop
 
