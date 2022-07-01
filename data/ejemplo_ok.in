@@ -1,0 +1,13 @@
+type persona struct {
+    nombre  string
+    edad    int
+    altura  float64
+    fecha_nacimiento fecha
+}
+
+type fecha struct {
+    dia int
+    mes int
+    año int
+    bisiesto bool
+}

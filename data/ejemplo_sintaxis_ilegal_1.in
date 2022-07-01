@@ -1,0 +1,4 @@
+type Persona struct {
+    nombre string
+    edad int
+}

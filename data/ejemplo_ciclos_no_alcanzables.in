@@ -1,0 +1,8 @@
+type persona struct {
+    nombre string
+    edad int
+}
+
+type im a
+type a cicle
+type cicle im

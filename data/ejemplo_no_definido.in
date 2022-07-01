@@ -1,0 +1,5 @@
+type persona struct {
+    nombre  string
+    edad    int
+    nacionalidad pais
+}
