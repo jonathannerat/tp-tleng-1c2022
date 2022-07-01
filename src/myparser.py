@@ -49,7 +49,10 @@ def p_proplist(p):
 
 
 def p_error(p):
-    raise TPError("Error sintáctico: token inválido '%s' en la linea %s, columna %s" % (p.value, p.lineno, p.lexpos + 1))
+    raise TPError(
+        "Error: token inválido '%s' en la linea %s, columna %s"
+        % (p.value, p.lineno, p.lexpos + 1)
+    )
 
 
 parser = yacc.yacc()

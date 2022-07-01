@@ -33,7 +33,7 @@ def resolve(result):
     maybeloop = get_loop(deps, maintype.name, {})
     if maybeloop is not None:
         raise TPError(
-            "Error semántico, se encontró una referencia circular en la definición de '%s', mediante el tipo '%s'"
+            "Error: se encontró una referencia circular en la definición de '%s', mediante el tipo '%s'"
             % maybeloop
         )
 
