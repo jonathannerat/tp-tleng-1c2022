@@ -4,7 +4,7 @@
 from sys import stdin
 import ply.yacc as yacc
 
-from mylexer import tokens
+from mylexer import tokens, find_column
 from myast import BasicTypeNode, TypedefNode, ArrayTypeNode, StructTypeNode, basic_types
 from myerror import TPError
 
@@ -51,7 +51,7 @@ def p_proplist(p):
 def p_error(p):
     raise TPError(
         "Error: token inválido '%s' en la linea %s, columna %s"
-        % (p.value, p.lineno, p.lexpos + 1)
+        % (p.value, p.lineno, find_column(p))
     )
 
 
