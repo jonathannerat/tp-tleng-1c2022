@@ -1,0 +1,19 @@
+type tienda struct {
+    nombre_dueño string
+    catalogo_de_productos catalogo
+}
+
+type producto struct {
+    nombre string
+    precio float64
+    catalogo_donde_esta catalogo
+}
+
+type catalogo struct {
+    contenido []entrada_de_catalogo
+}
+
+type entrada_de_catalogo struct {
+    producto_incluido producto
+    cantidad int
+}

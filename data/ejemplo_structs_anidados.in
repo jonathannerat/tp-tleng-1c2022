@@ -1,0 +1,13 @@
+type usuario struct {
+	perfil struct {
+		nombre string
+		edad int
+		localizacion struct {
+			calle_y_numero string
+			coordenadas struct {
+				lat float64
+				long float64
+			}
+		}
+	}
+}

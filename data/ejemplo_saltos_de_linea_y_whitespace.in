@@ -1,0 +1,8 @@
+type en_una_linea struct { nombre string datos datos_con_tabs }
+
+type datos_con_tabs struct
+{	edad	int	documento int prefiere_tabs	bool		ubicaciones []   llaves_sin_espacios
+	}
+
+type llaves_sin_espacios struct{
+	x float64 y float64}
