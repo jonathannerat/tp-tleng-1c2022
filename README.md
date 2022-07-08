@@ -6,7 +6,7 @@ El mismo se puede correr sin argumentos para procesar entrada por `stdin`, y esc
 hasta 2 argumentos opcionales, especificando los archivos de entrada y de salida:
 
 ```sh
-python ./src/main.py [ INPUT_FILE [ OUTPUT_FILE ] ]
+./genjson [ INPUT_FILE [ OUTPUT_FILE ] ]
 ```
 
 También se provee un archivo `Makefile` con una tarea `test` para procesar las entradas incluidas en este proyecto.
