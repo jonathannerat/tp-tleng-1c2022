@@ -1,0 +1,12 @@
+type persona struct {
+	nombre string
+	nacimiento fecha
+}
+
+type fecha struct {
+	dia int
+	mes int
+	año int
+}
+
+type fecha string
