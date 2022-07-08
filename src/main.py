@@ -27,7 +27,7 @@ def resolve(result):
 
     for typedef in result:
         if typedef.name in deps:
-            raise TPError("Error: declaración duplicada del tipo '%s'" % typedef.name)
+            raise TPError("Error: multiples declaraciones del tipo '%s'" % typedef.name)
         deps[typedef.name] = list(typedef.get_deps().keys())
 
     maybeloop = get_loop(deps, maintype.name, {})
