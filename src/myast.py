@@ -1,4 +1,8 @@
 from random import random, randrange
+from myerror import TPError
+
+
+basic_types = ["string", "int", "bool", "float64"]
 
 
 class Node:
@@ -22,6 +26,10 @@ class TypedefNode(Node):
     """Nodo Typedef, asigna un nombre a un tipo"""
 
     def __init__(self, name, type):
+        if name in basic_types:
+            raise TPError(
+                "Error: nombre de tipo inválido, '%s' representa un tipo básico." % name
+            )
         self.name = name
         self.type = type
 
@@ -106,9 +114,6 @@ class StructTypeNode(Node):
                 self.props[i] = (prop[0], proptype)
 
             proptype.resolve(resolve_dict)
-
-
-basic_types = ["string", "int", "bool", "float64"]
 
 
 def rand_string():
