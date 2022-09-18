@@ -1,48 +1,48 @@
-\section{Generación de JSON}
-\label{sec:json}
+\hypertarget{sec:json}{\section{Generación de JSON}}
 
-Con el árbol completo, la generación del JSON aleatorio se puede describir de
-manera recursiva, explicando como se generan los casos base (tipos básicos), y
-luego el paso inductivo (tipos que tienen uno o más tipos en sus propiedades):
+    Con el árbol completo, la generación del JSON aleatorio se puede describir de manera recursiva. Esto es, cómo se generan los casos base (tipos básicos), y cómo se genera el caso recursivo (tipos que tienen uno o más tipos en sus propiedades):
 
 \paragraph{Casos base}
 
 \begin{itemize}
     \item \texttt{int}, \texttt{float64} y \texttt{bool} son triviales con la
-        librería \texttt{random} de Python.
+        biblioteca \texttt{random} de Python.
     \item \texttt{string}: utilizamos la cadena ``abcdefghijklmnñopqrstuvwxyz''
-        como diccionario de caractéres, y tomamos una cantidad aleatoria de
-        caracteres (máximo 20) de manera aleatoria (nuevamente con
-        \texttt{random}),
+        como diccionario de caracteres, y tomamos al azar una cantidad aleatoria de
+        caracteres (máximo 20), nuevamente mediante \texttt{random},
 \end{itemize}
 
-\paragraph{Paso inductivo}
+\paragraph{Caso Recursivo}
 
 \begin{itemize}
     \item \texttt{[] <tipo>}: generamos la representación en JSON de \texttt{<tipo>} una
-        cantidad aleatoria de veces (entre 1 y 5), y los listamos separados por comas, y
+        cantidad aleatoria de veces (entre 1 y 5), y los listamos separados por comas y
         encerrados entre corchetes:\\
         \texttt{[<tipo 1>,<tipo 2>,\dots]}
     \item \texttt{struct \{ <prop 1>~<tipo 1>~... \}}: por cada propiedad del
-        scruct, generamos la representación en JSON del tipo correspondiente, y
+        struct, generamos la representación en JSON del tipo correspondiente, y
         los representamos como un objeto convencional: \\
         \texttt{\{"prop 1":<tipo 1>, \dots\}}
 \end{itemize}
 
+    Este algoritmo recursivo toma como punto de partida el tipo asociado a la primera definición encontrada; en otras palabras, al tipo del primer \texttt{TypedefNode} del arreglo computado por el parser.
+
 \subsection{Ejemplos}
 
-A continuación mostramos algunos ejemplos de entradas válidas, inválidas, y los
-errores que se reportan para las inválidas, separando los resultados por una
-linea con guiones:
+    A continuación, mostramos algunos ejemplos de entradas válidas, inválidas y los errores que se reportan para las inválidas.
 
-\begin{lstlisting}[caption=Ejemplo válido]
+\subsubsection{Ejemplos válidos}
+
+Los ejemplos que siguen prueban que las salidas de JSON aleatorizadas sean las esperadas dada una serie de definiciones válida.
+
+\begin{lstlisting}[caption=Ejemplo con un \texttt{struct}.]
 type persona struct {
     nombre  string
     edad    int
     altura  float64
     activo  bool
 }
-----
+---- RESULTADO
 {
   "nombre": "nvjvdkibhukontfzdco",
   "edad": 456,
@@ -53,7 +53,79 @@ type persona struct {
 
 \newpage
 
-\begin{lstlisting}[caption=Ejemplo inválido: ciclos]
+\begin{lstlisting}[caption={Ejemplo complejo con referencias, arreglos y structs anidados.}]
+type user struct {
+    name string
+    email string
+    the matrix
+    projects []project
+}
+
+type project struct {
+    tasks []task
+    created_at struct {
+        day int
+        month int
+        year int
+    }
+}
+
+type task struct {
+    description string
+    done bool
+}
+
+type complex struct {
+    real float64
+    imag float64
+}
+
+type matrix [][]complex
+
+---- RESULTADO
+
+{
+  "name": "nufaffnbsf",
+  "email": "cr",
+  "the": [
+    [
+      {"real":372.36, "imag": 47.56},
+      {"real":209.7, "imag": 581.6}
+    ],
+    [
+      {"real": 408.72, "imag": 247.98},
+      {"real": 784.06, "imag": 302.47}
+    ]
+  ],
+  "projects": [
+    {
+      "tasks": [
+        {
+          "description": "fpnudndruzpxm",
+          "done": true,
+        },
+        {
+          "description": "yerqsjzm",
+          "done": false,
+        }
+      ],
+      "created_at": {
+        "day": 424,
+        "month": 694,
+        "year": 762
+      }
+    },
+  ]
+}
+\end{lstlisting}
+
+
+\subsubsection{Ejemplos con errores semánticos}
+
+    Los siguientes ejemplos prueban la detección de ciclos y tipos indefinidos desarrollada.
+    Además se incluyen otros ejemplos de redefinición de tipos existentes (básicos o referencias).
+
+\begin{lstlisting}[caption=Ejemplo con ciclo de definiciones que parte del tipo principal.]
 type persona struct {
     nombre  string
     edad    int
@@ -64,16 +136,71 @@ type pais struct {
     nombre string
     presidente persona
 }
-----
+---- RESULTADO
+
 Error: se encontró una referencia circular en la definición de 'pais', mediante el tipo 'persona'
 \end{lstlisting}
 
-\begin{lstlisting}[caption=Ejemplo inválida: no definido]
+\begin{lstlisting}[caption=Ejemplo con uso de tipo no definido.]
 type persona struct {
     nombre  string
     edad    int
     nacionalidad pais
 }
-----
+---- RESULTADO
+
 Error: el tipo 'pais' no esta definido.
+\end{lstlisting}
+
+\begin{lstlisting}[caption=Ejemplo con redefinición de tipo básico.]
+type persona struct {
+    nombre string
+}
+
+type string bool
+---- RESULTADO
+
+Error: nombre de tipo inválido, 'string' representa un tipo básico.
+\end{lstlisting}
+
+\begin{lstlisting}[caption=Ejemplo con múltiples declaraciones para el mismo tipo.]
+type persona struct {
+    nombre string
+    nacimiento fecha
+}
+
+type fecha struct {
+    dia int
+    mes int
+    año int
+}
+
+type fecha string
+---- RESULTADO
+
+Error:  múltiples declaraciones del tipo 'fecha'
+\end{lstlisting}
+
+\subsubsection{Ejemplos con errores sintácticos}
+
+En los ejemplos que siguen probamos la detección de errores sintácticos de acuerdo a las reglas correspondientes al lexer y al parser que definimos con Lex y Yacc respectivamente.
+
+\begin{lstlisting}[caption=Ejemplo con caracter ilegal no reconocido por el lexer.]
+type Persona struct {
+    nombre string
+    edad int
+}
+---- RESULTADO
+
+Error: caractér ilegal 'P' en la linea 1, columna 6
+\end{lstlisting}
+
+\begin{lstlisting}[caption=Ejemplo donde se usa la palabra reservada \texttt{struct} después de \texttt{type} cuando se esperaba un identificador.]
+type struct struct {
+    nombre string
+    edad int
+}
+---- RESULTADO
+
+Error: token inválido 'struct' en la linea 1, columna 6
 \end{lstlisting}

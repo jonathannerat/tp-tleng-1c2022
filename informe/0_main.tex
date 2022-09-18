@@ -4,7 +4,7 @@
 \usepackage{caratula}
 
 \usepackage[utf8]{inputenc}
-\usepackage[spanish]{babel} % separación silábica en castellano
+\usepackage[spanish.lcroman]{babel}
 
 %\usepackage[paper=a4paper, margin=2cm]{geometry} % especifico márgenes manualmente
 \usepackage{a4wide} % margenes un poco más anchos
@@ -59,6 +59,7 @@
          {é}{{\'e}}1
          {ú}{{\'u}}1
          {ó}{{\'o}}1
+         {ñ}{{\~n}}1
 }
 
 % Comandos para teoremas, etc.
@@ -75,10 +76,13 @@
   \State \algorithmicif\ #1\ \algorithmicthen\ #2}
   
 \newcommand{\norm}[1]{\left\lVert#1\right\rVert_2}
+\usepackage{biblatex}
+\usepackage{csquotes}
+\addbibresource{recursos.bib}
 \usepackage{hyperref}
 \hypersetup{
     colorlinks=true,
-    linkcolor=blue,
+    linkcolor={blue!80!black},
     filecolor=magenta,      
     urlcolor=cyan,
     pdftitle={TP TLENG 1c2022},
@@ -91,27 +95,29 @@
 \setlength{\headheight}{12pt}
 \rhead{Primer Cuatrimestre 2022}
 \cfoot{\thepage /\pageref{LastPage}}
+\setlength{\parskip}{0.5em}
+\setlength{\parindent}{2em}
 
-
+\renewcommand{\labelitemi}{\color{black}$\bullet$}
+\renewcommand\labelitemii{\color{black}$\circ$}
+\renewcommand\labelitemiii{\scriptsize \color{black}$\square$}
+\renewcommand{\labelenumi}{\color{black}{\theenumi.}}
 
 \begin{document}
 
-\input{1_caratula}
+\include{caratula}
 
+\pagenumbering{roman} 
 \maketitle
-
+\phantomsection
+\addcontentsline{toc}{section}{Índice general}
 \tableofcontents
-
-\newpage
-
-\input{2_introduccion}
-
+\include{1_resumen}
+\pagenumbering{arabic}
+\include{2_introduccion}
 \input{3_gramatica}
-
 \input{4_referencias}
-
 \input{5_json}
-
-\input{6_conclusiones}
-
+\include{6_conclusion}
+\printbibliography
 \end{document}

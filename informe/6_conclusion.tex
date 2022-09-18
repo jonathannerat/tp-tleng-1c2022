@@ -1,0 +1,10 @@
+\section{Conclusión}
+\label{sec:conc}
+
+    Podemos concluir que es posible implementar un programa para parsear definiciones de tipos (potencialmente cíclicas), utilizando TDS para la construcción del AST y métodos adicionales para la detección de ciclos. Además, pudimos generar cadenas JSON aleatorias que se corresponden con los tipos definidos dinámicamente.
+    
+    Además, podemos mencionar reflexiones más generales que aplican a cualquier desarrollo donde se tengan que procesar entradas pertenecientes a un cierto lenguaje (libre de contexto).
+    
+    En primer lugar, es necesario definir los tokens y, a partir de ellos, definir una gramática. En esta etapa pueden haber varias alternativas en cuanto a qué tan flexibles somos con las reglas aplicadas; por ejemplo, podemos tender a tener producciones específicas para las palabras reservadas, en nuestro caso los tipos básicos \texttt{int}, \texttt{string}, \texttt{bool} y \texttt{float64}, o tender a agrupar estas palabras en un único tipo de token \texttt{id} y luego considerar su valor en la etapa de traducción.
+    
+    Otra cosa a tener en cuenta es que hay muchas gramáticas distintas que general el mismo lenguaje. Algunas son menos intuitivas, más difíciles de leer o de procesar, más propensas a tener conflictos. En este trabajo, consideramos que la gramática propuesta es muy intuitiva, y aún así resultó ser LALR(1)-- esto siendo suficiente para que Yacc pueda armar el parser, sin tener que resolver conflictos de manera automatizada.

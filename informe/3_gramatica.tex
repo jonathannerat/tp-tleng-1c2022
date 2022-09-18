@@ -1,10 +1,9 @@
-\section{Gramática, Parser y AST}
-\label{sec:gramatica}
+\hypertarget{sec:gramatica}{\section{Gramática, Parsing y AST}}
+
 
 \subsection{Construcción de la Gramática}
 
-Para construir la gramática, analizaremos una posible cadena de entrada para
-ver cuáles son los terminales y no terminales necesarios:
+    A continuación, analizaremos la siguiente cadena de entrada para determinar, de manera iterativa incremental, una gramática que genere el lenguaje pedido.
 
 \begin{verbatim}
 type persona struct {
@@ -23,28 +22,21 @@ type pais struct {
 }
 \end{verbatim}
 
-Como en la entrada podemos recibir muchas declaraciones de tipos, y por lo
-menos hay una declaración (que es la que se utiliza para generar el JSON de
-salida), intuimos que debe haber una producción para la declaración, y otra
-para acumular varias:
-
+    Podemos ver que, en la cadena de entrada, podemos tener varias declaraciones de tipos (\textit{DeclList}). Además, podemos asegurar que siempre vamos a tener al menos una (\textit{Decl}). Esta declaración es la que vamos a utilizar para generar el JSON de salida. Luego, agregamos las siguientes dos producciones.
 \begin{equation}
 \begin{split}
 DeclList & \rightarrow Decl~|~Decl~DeclList 
 \end{split}
 \end{equation}
 
-Cada declaración consiste de un nombre seguido del tipo asociado al nombre:
-
+    Cada declaración está conformada de tres partes: la palabra reservada \textit{type}, un nombre (\textit{name}) y \textit{tipo} asociado al nombre.
 \begin{equation} \label{gram:decl}
 \begin{split}
 Decl & \rightarrow type~name~Type
 \end{split}
 \end{equation}
 
-El no terminal \texttt{Type} debe ser capaz de generar los tipos mencionados en
-la sección \ref{sec:intro}. 
-
+    El no-terminal \texttt{Type} debe ser capaz de generar los tipos mencionados en la sección \hyperlink{sec:intro}{Introducción}. 
 \begin{equation} \label{gram:type}
 \begin{split}
 Type & \rightarrow BasicType~|~ArrayType~|~StructType \\
@@ -53,10 +45,7 @@ ArrayType & \rightarrow []~Type
 \end{split}
 \end{equation}
 
-Para el no terminal \texttt{StructType}, recordemos que las estructuras pueden
-contener más de una propiedad, por lo que necesitaremos de otro no terminal
-para listar las mismas:
-
+    Recordemos que los elementos de tipo estructura (\texttt{StructType}) pueden contener más de una propiedad, por lo que necesitaremos de otro no-terminal para listar las mismas.
 \begin{equation} \label{gram:struct}
 \begin{split}
 StructType & \rightarrow struct~\{~PropList~\} \\
@@ -65,15 +54,7 @@ Prop & \rightarrow name~Type
 \end{split}
 \end{equation}
 
-Para simplificar la gramática, podemos juntar los terminales \texttt{name},
-\texttt{string}, \texttt{int}, \texttt{float64} y \texttt{bool} en un terminal
-\texttt{id}, que representa los identificadores tanto de propiedades como de
-tipos. Luego en la etapa de parsing los diferenciaremos según el contexto y el
-valor que contenga el lexema. Reemplazando por \texttt{id} en \ref{gram:decl},
-\ref{gram:type} y \ref{gram:struct}, y juntando todo, obtenemos el siguiente
-conjunto de producciones $P'$:
-
-
+    En este punto, en busca de simplificar la gramática, podemos juntar los terminales \texttt{name}, \texttt{string}, \texttt{int}, \texttt{float64} y \texttt{bool} en un único terminal \texttt{id}. Este terminal va a representar a los \textit{identificadores}, tanto de propiedades como de tipos. Luego, en la etapa de parsing, diferenciaremos a cada identificador según el contexto y el valor que contenga el lexema. Reemplazando por \texttt{id} en \ref{gram:decl}, \ref{gram:type} y \ref{gram:struct} y juntando todo, obtenemos el siguiente conjunto de producciones.
 \begin{equation}
 \begin{split}
 DeclList & \rightarrow Decl~|~Decl~DeclList  \\
@@ -87,9 +68,7 @@ Prop & \rightarrow id~Type
 \end{split}
 \end{equation}
 
-Podemos simplificarla un poco más si reemplazamos los no terminales del lado
-derecho de \texttt{Type} con las producciones correspondientes, obteniendo así
-$P$:
+    Notemos que aún podemos simplificar un poco más la gramática si reemplazamos los no-terminales del cuerpo de \texttt{Type} con las producciones correspondientes, obteniendo así $P$:
 
 \begin{equation}
 \begin{split}
@@ -101,23 +80,18 @@ Prop & \rightarrow id~Type
 \end{split}
 \end{equation}
 
-Finalmente, proponemos la siguiente gramática
-
+    Con todo esto en cuenta, proponemos la siguiente gramática $G$ para generar las cadenas del lenguaje.
 \[
 G = \langle\{Decl, DeclList, Type, PropList, Prop\}, \{type, id, [], struct, '\{', '\}'\}, P, DeclList\rangle
 \]
 
-para generar el lenguaje de las cadenas que esperamos recibir por entrada.
+Dado que Yacc utiliza parsers LALR(1) para las gramáticas que recibe de entrada, es importante que la gramática \textit{G} sea LALR(1); en otras palabras, que durante el armado de la tabla para el parser no surja ningún conflicto. Ya que la misma librería se encarga de armar dicha tabla, nos informará si existe algún conflicto o no.
 
-\subsection{Implementación del Parser}
+\subsection{Parser}
 
-Antes de implementar la gramática con Yacc, tenemos que hacer un
-preprocesamiento de la misma para convertir el texto en una lista de tokens.
-Para esto utilizaremos el módulo Lex, y proveeremos las expresiones regulares
-necesarias para que el lexer identifique a cada token.
+    Antes de implementar la gramática con Yacc, tenemos que hacer un pre-procesamiento para convertir el texto en una lista de tokens. Para esto, utilizaremos el módulo Lex y proveeremos las expresiones regulares necesarias para que el lexer pueda identificar a cada token.
 
-Definimos 6 tokens en total, de los cuales 2 son los literales '\{' y '\}'. El
-resto son:
+    Definimos seis tokens en total, de los cuales dos son los literales '\{' y '\}'. El resto son:
 
 \begin{itemize}
     \item \texttt{TYPE = type}
@@ -126,56 +100,52 @@ resto son:
     \item \texttt{ID = r'[a-z]\textbackslash w*'}
 \end{itemize}
 
-Los primeros 3 los definimos con la cadena que los identifica, mientras que el
-token \texttt{ID} lo representamos con una expresion regular que corresponde
-con los posibles identificadores de este lenguaje, palabras que empiecen con
-una letra minúscula.
+    Los primeros tres los definimos con la cadena que los identifica, mientras que el token \texttt{ID} lo representamos con una expresión regular que corresponde con los posibles identificadores de este lenguaje: son las palabras que empiecen con una letra minúscula y continúan con cualquier caracter (Unicode, incluidos '\_' y números \cite{re}).
 
-Con los tokens declarados, la implementación de la gramática es directa ya que
-definimos un método por cada producción, o por cada no terminal del lado
-izquierdo si sus producciones son similares. Además, en cada método se debe
-armar progresivamente el arbol sintáctico (\textit{AST}), por lo que debemos
-declarar algunas estructuras para facilitar su contrucción.
+    La implementación de la gramática es casi inmediata. Vamos a definir un método por cada producción (o por cada no-terminal si sus producciones son similares). 
 
 \subsection{AST}
 \label{subsec:ast}
 
-Para armar el arbol, asociaremos una estructura a cada no terminal:
+    Para el armado del parser Yacc requiere que se defina una serie de funciones, donde cada una está asociada a una producción de la gramática y define el código a ejecutar una vez reconocida esa producción, siguiendo así el método conocido como \textit{traducción dirigida por sintaxis}.
+    
+    Con dichas funciones Yacc cuenta con lo necesario para armar la tabla para el parser LALR; para la gramática que propusimos, no reportó ningún conflicto, lo cual nos confirma que la gramática es efectivamente LALR(1).
+    
+    En cada método asociado a una producción de la gramática, vamos a armar progresivamente el árbol sintáctico (\textit{AST}). Para ello, vamos a declarar algunas estructuras que facilitan su construcción. 
+    
+    Para armar el árbol, asociaremos a cada no-terminal una estructura de datos particular:
 
 \begin{itemize}
     \item \texttt{DeclList} y \texttt{PropList} se pueden implementar con los
         arreglos convencionales.
-    \item \texttt{Decl}: estructura \texttt{TypedefNode} con las propiedades
-        \textit{nombre (string)} y \textit{tipo (estructura de tipo)}.
-    \item \texttt{Type}: son las estructuras de tipo, y dependen de la
+    \item \texttt{Decl}. Es una estructura \texttt{TypedefNode} con las propiedades
+        \textit{nombre} (string) y \textit{tipo} (estructura de tipo).
+    \item \texttt{Type}. Son las estructuras de tipo, y dependen de la
         producción utilizada:
     \begin{itemize}
-        \item \texttt{ID}: Si la cadena asociado al terminal es un tipo básico,
+        \item \texttt{ID}. 
+        \begin{itemize}
+            \item Si la cadena asociada al terminal es un tipo básico,
             lo representaremos con una estructura \texttt{BasicTypeNode} que
-            contenga el nombre del tipo. Si no, lo representamos con la cadena
-            original. Esta decisión será más evidente cuando hagamos la
-            resolución de referencias en la seccion \ref{sec:referencias}.
-        \item \texttt{[] Type}: estructura \texttt{ArrayTypeNode} con la
-            propiedad \textit{tipo (estructura de tipo)}.
+            contenga el nombre del tipo. 
+            \item Caso contrario, lo representamos con la cadena original.
+        \end{itemize} 
+        Esta decisión será más evidente cuando hagamos la resolución de referencias en \hyperlink{sec:referencias}{Referencias}.
+        \item \texttt{[] Type}. Es una estructura \texttt{ArrayTypeNode} con la
+            propiedad \textit{tipo} (estructura de tipo).
         \item \texttt{Struct \{ PropList \}}: estructura
-            \texttt{StructTypeNode} con la propiedad \textit{props (lista de
-            Prop)}
+            \texttt{StructTypeNode} con una lista de propiedades \textit{Prop}'s.
     \end{itemize}
-    \item \texttt{Prop}: tupla $\langle \textit{nombre (string)}, \textit{tipo
-        (estructura de tipo)}\rangle$
+    \item \texttt{Prop}. Es una tupla $\langle \textit{nombre (string)}, \textit{tipo
+        (estructura de tipo)}\rangle$.
 \end{itemize}
 
-Luego, en el método de cada producción, instanciaremos la estructura asociada
-al no terminal del lado izquierdo con las estructuras asociadas a los no
-terminales del lado derecho. De esta forma, el resultado del parsing es el
-árbol dado por el arreglo de estructuras \texttt{TypedefNode}: 
+    En el método de cada producción, instanciaremos la estructura asociada al no-terminal de la cabeza de la producción con las estructuras asociadas a los no-terminales del cuerpo de la producción. De esta forma, el resultado del parsing es el árbol dado por el arreglo de estructuras \texttt{TypedefNode}. 
 
 \begin{itemize}
-    \item cada arreglo es un nodo que tiene como hijos a sus elementos,
-    \item cada estructura es otro nodo, que tene como hijo a la estructura que
-        se encuentra en su propiedad \textit{tipo},
-    \item las hojas son los estructuras de tipos básicos, y las cadenas que no
-        son tipos basicos (y por lo tanto, son referencias que se deben
-        resolver).
+    \item Cada arreglo es un nodo que tiene como hijos a sus elementos.
+    \item Cada estructura es otro nodo, que tene como hijo a la estructura que
+        se encuentra en su propiedad \textit{tipo}.
+    \item Las hojas son estructuras de tipos básicos, o bien cadenas que no
+        son tipos básicos (referencias que se deben resolver).
 \end{itemize}
-
